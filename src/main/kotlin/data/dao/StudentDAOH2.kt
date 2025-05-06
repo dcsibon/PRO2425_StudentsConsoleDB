@@ -5,6 +5,7 @@ import es.prog2425.students.model.Student
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
+import java.sql.SQLException
 
 class StudentDAOH2: IStudentDAO {
 
@@ -23,8 +24,10 @@ class StudentDAOH2: IStudentDAO {
                 val name = rs.getString("name")
                 students.add(Student(id, name))
             }
+        } catch (e: SQLException) {
+            throw IllegalStateException("Error al recuperar estudiantes de la base de datos", e)
         } catch (e: Exception) {
-            println("Error al recuperar estudiantes: ${e.message}")
+            throw IllegalStateException("Error inesperado al recuperar estudiantes", e)
         } finally {
             try { rs?.close() } catch (_: Exception) {}
             try { stmt?.close() } catch (_: Exception) {}
@@ -43,8 +46,10 @@ class StudentDAOH2: IStudentDAO {
             stmt = conn.prepareStatement("INSERT INTO students (name) VALUES (?)")
             stmt.setString(1, name)
             stmt.executeUpdate()
+        } catch (e: SQLException) {
+            throw IllegalStateException("Error al insertar estudiante en la base de datos", e)
         } catch (e: Exception) {
-            println("Error al añadir estudiante: ${e.message}")
+            throw IllegalStateException("Error inesperado al insertar estudiante", e)
         } finally {
             try { stmt?.close() } catch (_: Exception) {}
             Database.closeConnection(conn)
@@ -61,8 +66,10 @@ class StudentDAOH2: IStudentDAO {
             stmt.setString(1, name)
             stmt.setInt(2, id)
             stmt.executeUpdate()
+        } catch (e: SQLException) {
+            throw IllegalStateException("Error al actualizar estudiante en la base de datos", e)
         } catch (e: Exception) {
-            println("Error al actualizar estudiante: ${e.message}")
+            throw IllegalStateException("Error inesperado al actualizar estudiante", e)
         } finally {
             try { stmt?.close() } catch (_: Exception) {}
             Database.closeConnection(conn)
@@ -78,8 +85,10 @@ class StudentDAOH2: IStudentDAO {
             stmt = conn.prepareStatement("DELETE FROM students WHERE id = ?")
             stmt.setInt(1, id)
             stmt.executeUpdate()
+        } catch (e: SQLException) {
+            throw IllegalStateException("Error al eliminar estudiante en la base de datos", e)
         } catch (e: Exception) {
-            println("Error al eliminar estudiante: ${e.message}")
+            throw IllegalStateException("Error inesperado al eliminar estudiante", e)
         } finally {
             try { stmt?.close() } catch (_: Exception) {}
             Database.closeConnection(conn)
@@ -99,8 +108,10 @@ class StudentDAOH2: IStudentDAO {
             if (rs.next()) {
                 return Student(rs.getInt("id"), rs.getString("name"))
             }
+        } catch (e: SQLException) {
+            throw IllegalStateException("Error al buscar estudiante en la base de datos", e)
         } catch (e: Exception) {
-            println("Error al buscar estudiante por ID: ${e.message}")
+            throw IllegalStateException("Error inesperado al buscar estudiante", e)
         } finally {
             try { rs?.close() } catch (_: Exception) {}
             try { stmt?.close() } catch (_: Exception) {}

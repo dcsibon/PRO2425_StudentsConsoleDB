@@ -50,9 +50,9 @@ class StudentsManager(
                 students.forEach { ui.mostrar("ID: ${it.id} - Nombre: ${it.name}") }
             }
         } catch (e: IllegalStateException) {
-            ui.mostrarError("Error de acceso a la base de datos: ${e.message}")
+            ui.mostrarError("Error de acceso a la base de datos: ${e.message}\n${e.cause}")
         } catch (e: Exception) {
-            ui.mostrarError("Error inesperado: ${e.message}")
+            ui.mostrarError("Error inesperado: ${e.message}\n${e.cause}")
         }
     }
 
@@ -62,11 +62,11 @@ class StudentsManager(
             service.addStudent(name)
             ui.mostrar("Estudiante añadido.")
         } catch (e: IllegalArgumentException) {
-            ui.mostrarError("Nombre inválido: ${e.message}")
+            ui.mostrarError("Nombre inválido: ${e.message}\n${e.cause}")
         } catch (e: IllegalStateException) {
-            ui.mostrarError("Error de base de datos: ${e.message}")
+            ui.mostrarError("Error de base de datos: ${e.message}\n${e.cause}")
         } catch (e: Exception) {
-            ui.mostrarError("Error inesperado: ${e.message}")
+            ui.mostrarError("Error inesperado: ${e.message}\n${e.cause}")
         }
     }
 
@@ -78,11 +78,11 @@ class StudentsManager(
                 service.updateStudent(id, newName)
                 ui.mostrar("Estudiante actualizado.")
             } catch (e: IllegalArgumentException) {
-                ui.mostrarError("Datos inválidos: ${e.message}")
+                ui.mostrarError("Datos inválidos: ${e.message}\n${e.cause}")
             } catch (e: IllegalStateException) {
-                ui.mostrarError("Error de base de datos: ${e.message}")
+                ui.mostrarError("Error de base de datos: ${e.message}\n${e.cause}")
             } catch (e: Exception) {
-                ui.mostrarError("Error inesperado: ${e.message}")
+                ui.mostrarError("Error inesperado: ${e.message}\n${e.cause}")
             }
         } else {
             ui.mostrarError("ID inválido.")
@@ -96,11 +96,11 @@ class StudentsManager(
                 service.deleteStudent(id)
                 ui.mostrar("Estudiante eliminado.")
             } catch (e: IllegalArgumentException) {
-                ui.mostrarError("ID inválido: ${e.message}")
+                ui.mostrarError("ID inválido: ${e.message}\n${e.cause}")
             } catch (e: IllegalStateException) {
-                ui.mostrarError("Error de base de datos: ${e.message}")
+                ui.mostrarError("Error de base de datos: ${e.message}\n${e.cause}")
             } catch (e: Exception) {
-                ui.mostrarError("Error inesperado: ${e.message}")
+                ui.mostrarError("Error inesperado: ${e.message}\n${e.cause}")
             }
         } else {
             ui.mostrarError("ID inválido.")
@@ -118,11 +118,11 @@ class StudentsManager(
                     ui.mostrar("No se encontró ningún estudiante con ese ID.")
                 }
             } catch (e: IllegalArgumentException) {
-                ui.mostrarError("ID inválido: ${e.message}")
+                ui.mostrarError("ID inválido: ${e.message}\n${e.cause}")
             } catch (e: IllegalStateException) {
-                ui.mostrarError("Error de base de datos: ${e.message}")
+                ui.mostrarError("Error de base de datos: ${e.message}\n${e.cause}")
             } catch (e: Exception) {
-                ui.mostrarError("Error inesperado: ${e.message}")
+                ui.mostrarError("Error inesperado: ${e.message}\n${e.cause}")
             }
         } else {
             ui.mostrarError("ID no válido.")

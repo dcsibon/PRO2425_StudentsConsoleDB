@@ -7,7 +7,7 @@ import java.sql.SQLException
 object Database {
 
     // Parámetros de conexión
-    private const val JDBC_URL = "jdbc:h2:file:./data/studentdb"
+    private const val JDBC_URL = "jdbc:h2:./data/studentdb"
     private const val USER = "sa"
     private const val PASSWORD = ""
 

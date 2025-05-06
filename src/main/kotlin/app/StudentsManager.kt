@@ -7,10 +7,10 @@ class StudentsManager(
     private val service: IStudentService,
     private val ui: IConsoleUI
 ) {
-    private var running = true
+    private var terminarPrograma = false
 
     fun run() {
-        while (running) {
+        do {
             ui.limpiar()
             ui.mostrar(
                 """
@@ -26,26 +26,33 @@ class StudentsManager(
 
             ui.saltoLinea()
 
-            when (ui.leer("Elige una opción: ")) {
-                "1" -> mostrarEstudiantes()
-                "2" -> agregarEstudiante()
-                "3" -> editarEstudiante()
-                "4" -> eliminarEstudiante()
-                "5" -> buscarPorId()
-                "6" -> salir()
+            val opcion = ui.leer("Elige una opción: ").toIntOrNull()
+            when (opcion) {
+                1 -> mostrarEstudiantes()
+                2 -> agregarEstudiante()
+                3 -> editarEstudiante()
+                4 -> eliminarEstudiante()
+                5 -> buscarPorId()
+                6 -> salir()
                 else -> ui.mostrarError("Opción no válida.")
             }
 
-            ui.pausar()
-        }
+            if (opcion != 6) ui.pausar()
+        } while (!terminarPrograma)
     }
 
     private fun mostrarEstudiantes() {
-        val students = service.listAll()
-        if (students.isEmpty()) {
-            ui.mostrar("No hay estudiantes.")
-        } else {
-            students.forEach { ui.mostrar("ID: ${it.id} - Nombre: ${it.name}") }
+        try {
+            val students = service.listAll()
+            if (students.isEmpty()) {
+                ui.mostrar("No hay estudiantes.")
+            } else {
+                students.forEach { ui.mostrar("ID: ${it.id} - Nombre: ${it.name}") }
+            }
+        } catch (e: IllegalStateException) {
+            ui.mostrarError("Error de acceso a la base de datos: ${e.message}")
+        } catch (e: Exception) {
+            ui.mostrarError("Error inesperado: ${e.message}")
         }
     }
 
@@ -55,7 +62,11 @@ class StudentsManager(
             service.addStudent(name)
             ui.mostrar("Estudiante añadido.")
         } catch (e: IllegalArgumentException) {
-            ui.mostrarError(e.message ?: "Nombre inválido.")
+            ui.mostrarError("Nombre inválido: ${e.message}")
+        } catch (e: IllegalStateException) {
+            ui.mostrarError("Error de base de datos: ${e.message}")
+        } catch (e: Exception) {
+            ui.mostrarError("Error inesperado: ${e.message}")
         }
     }
 
@@ -67,7 +78,11 @@ class StudentsManager(
                 service.updateStudent(id, newName)
                 ui.mostrar("Estudiante actualizado.")
             } catch (e: IllegalArgumentException) {
-                ui.mostrarError(e.message ?: "Error al actualizar.")
+                ui.mostrarError("Datos inválidos: ${e.message}")
+            } catch (e: IllegalStateException) {
+                ui.mostrarError("Error de base de datos: ${e.message}")
+            } catch (e: Exception) {
+                ui.mostrarError("Error inesperado: ${e.message}")
             }
         } else {
             ui.mostrarError("ID inválido.")
@@ -81,7 +96,11 @@ class StudentsManager(
                 service.deleteStudent(id)
                 ui.mostrar("Estudiante eliminado.")
             } catch (e: IllegalArgumentException) {
-                ui.mostrarError(e.message ?: "Error al eliminar.")
+                ui.mostrarError("ID inválido: ${e.message}")
+            } catch (e: IllegalStateException) {
+                ui.mostrarError("Error de base de datos: ${e.message}")
+            } catch (e: Exception) {
+                ui.mostrarError("Error inesperado: ${e.message}")
             }
         } else {
             ui.mostrarError("ID inválido.")
@@ -98,8 +117,12 @@ class StudentsManager(
                 } else {
                     ui.mostrar("No se encontró ningún estudiante con ese ID.")
                 }
+            } catch (e: IllegalArgumentException) {
+                ui.mostrarError("ID inválido: ${e.message}")
+            } catch (e: IllegalStateException) {
+                ui.mostrarError("Error de base de datos: ${e.message}")
             } catch (e: Exception) {
-                ui.mostrarError(e.message ?: "Error al buscar estudiante.")
+                ui.mostrarError("Error inesperado: ${e.message}")
             }
         } else {
             ui.mostrarError("ID no válido.")
@@ -108,6 +131,6 @@ class StudentsManager(
 
     private fun salir() {
         ui.mostrar("Saliendo...")
-        running = false
+        terminarPrograma = true
     }
 }

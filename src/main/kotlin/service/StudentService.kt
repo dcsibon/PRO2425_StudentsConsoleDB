@@ -7,6 +7,11 @@ class StudentService(private val dao: IStudentDAO) : IStudentService {
 
     override fun listAll(): List<Student> = dao.getAll()
 
+    override fun getStudentById(id: Int): Student? {
+        require(id > 0) { "ID inválido." }
+        return dao.getById(id)
+    }
+
     override fun addStudent(name: String) {
         require(name.isNotBlank()) { "El nombre no puede estar vacío." }
         dao.add(name.trim())

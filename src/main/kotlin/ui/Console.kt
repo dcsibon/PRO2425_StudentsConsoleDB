@@ -1,20 +1,36 @@
 package es.prog2425.students.ui
 
 class Console : IConsoleUI {
-    override fun mostrarTexto(texto: String) {
-        println(texto)
+    override fun mostrar(texto: String, saltoLinea: Boolean) {
+        print("$texto${if (saltoLinea) "\n" else ""}")
     }
 
-    override fun leerTexto(prompt: String): String {
-        if (prompt.isNotBlank()) print(prompt)
+    override fun leer(prompt: String, saltoLinea: Boolean): String {
+        if (prompt.isNotBlank()) mostrar(prompt, saltoLinea)
         return readln()
     }
 
-    override fun mostrarError(mensaje: String) {
-        println(mensaje)
+    override fun mostrarError(mensaje: String, saltoLinea: Boolean) {
+        mostrar(mensaje, saltoLinea)
     }
 
-    override fun mostrarLineaVacia() {
-        println()
+    override fun saltoLinea() {
+        mostrar("")
+    }
+
+    override fun limpiar(lineas: Int) {
+        if (System.console() != null) {
+            // Terminal real: limpia con ANSI
+            mostrar("\u001B[H\u001B[2J", false)
+            System.out.flush()
+        } else {
+            // Probablemente ejecutando en un IDE
+            repeat(20) { mostrar("") }
+        }
+    }
+
+    override fun pausar(msj: String) {
+        saltoLinea()
+        leer(msj)
     }
 }

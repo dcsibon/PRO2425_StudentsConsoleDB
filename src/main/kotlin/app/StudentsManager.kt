@@ -11,56 +11,61 @@ class StudentsManager(
 
     fun run() {
         while (running) {
-            ui.mostrarTexto(
+            ui.limpiar()
+            ui.mostrar(
                 """
                 === MENÚ ===
                 1. Mostrar estudiantes
                 2. Agregar estudiante
                 3. Editar estudiante
                 4. Eliminar estudiante
-                5. Salir
+                5. Buscar estudiante por ID
+                6. Salir
                 """.trimIndent()
             )
 
-            when (ui.leerTexto("Elige una opción: ")) {
+            ui.saltoLinea()
+
+            when (ui.leer("Elige una opción: ")) {
                 "1" -> mostrarEstudiantes()
                 "2" -> agregarEstudiante()
                 "3" -> editarEstudiante()
                 "4" -> eliminarEstudiante()
-                "5" -> salir()
+                "5" -> buscarPorId()
+                "6" -> salir()
                 else -> ui.mostrarError("Opción no válida.")
             }
 
-            ui.mostrarLineaVacia()
+            ui.pausar()
         }
     }
 
     private fun mostrarEstudiantes() {
         val students = service.listAll()
         if (students.isEmpty()) {
-            ui.mostrarTexto("No hay estudiantes.")
+            ui.mostrar("No hay estudiantes.")
         } else {
-            students.forEach { ui.mostrarTexto("ID: ${it.id} - Nombre: ${it.name}") }
+            students.forEach { ui.mostrar("ID: ${it.id} - Nombre: ${it.name}") }
         }
     }
 
     private fun agregarEstudiante() {
-        val name = ui.leerTexto("Nombre del nuevo estudiante: ")
+        val name = ui.leer("Nombre del nuevo estudiante: ")
         try {
             service.addStudent(name)
-            ui.mostrarTexto("Estudiante añadido.")
+            ui.mostrar("Estudiante añadido.")
         } catch (e: IllegalArgumentException) {
             ui.mostrarError(e.message ?: "Nombre inválido.")
         }
     }
 
     private fun editarEstudiante() {
-        val id = ui.leerTexto("ID del estudiante a editar: ").toIntOrNull()
+        val id = ui.leer("ID del estudiante a editar: ").toIntOrNull()
         if (id != null) {
-            val newName = ui.leerTexto("Nuevo nombre: ")
+            val newName = ui.leer("Nuevo nombre: ")
             try {
                 service.updateStudent(id, newName)
-                ui.mostrarTexto("Estudiante actualizado.")
+                ui.mostrar("Estudiante actualizado.")
             } catch (e: IllegalArgumentException) {
                 ui.mostrarError(e.message ?: "Error al actualizar.")
             }
@@ -70,11 +75,11 @@ class StudentsManager(
     }
 
     private fun eliminarEstudiante() {
-        val id = ui.leerTexto("ID del estudiante a eliminar: ").toIntOrNull()
+        val id = ui.leer("ID del estudiante a eliminar: ").toIntOrNull()
         if (id != null) {
             try {
                 service.deleteStudent(id)
-                ui.mostrarTexto("Estudiante eliminado.")
+                ui.mostrar("Estudiante eliminado.")
             } catch (e: IllegalArgumentException) {
                 ui.mostrarError(e.message ?: "Error al eliminar.")
             }
@@ -83,8 +88,26 @@ class StudentsManager(
         }
     }
 
+    private fun buscarPorId() {
+        val id = ui.leer("Introduce el ID a buscar: ").toIntOrNull()
+        if (id != null) {
+            try {
+                val student = service.getStudentById(id)
+                if (student != null) {
+                    ui.mostrar("ID: ${student.id} - Nombre: ${student.name}")
+                } else {
+                    ui.mostrar("No se encontró ningún estudiante con ese ID.")
+                }
+            } catch (e: Exception) {
+                ui.mostrarError(e.message ?: "Error al buscar estudiante.")
+            }
+        } else {
+            ui.mostrarError("ID no válido.")
+        }
+    }
+
     private fun salir() {
-        ui.mostrarTexto("Saliendo...")
+        ui.mostrar("Saliendo...")
         running = false
     }
 }

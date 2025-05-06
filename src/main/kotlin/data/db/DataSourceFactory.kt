@@ -7,6 +7,10 @@ import javax.sql.DataSource
 
 object DataSourceFactory {
 
+    private const val JDBC_URL = "jdbc:h2:./data/studentdb"
+    private const val USER = "sa"
+    private const val PASSWORD = ""
+
     enum class Mode {
         HIKARI, SIMPLE
     }
@@ -15,19 +19,19 @@ object DataSourceFactory {
         return when (mode) {
             Mode.HIKARI -> {
                 val config = HikariConfig().apply {
-                    jdbcUrl = "jdbc:h2:./data/studentdb"
-                    username = "sa"
-                    password = ""
+                    jdbcUrl = JDBC_URL
+                    username = USER
+                    password = PASSWORD
                     driverClassName = "org.h2.Driver"
-                    maximumPoolSize = 5
+                    maximumPoolSize = 10
                 }
                 HikariDataSource(config)
             }
             Mode.SIMPLE -> {
                 JdbcDataSource().apply {
-                    setURL("jdbc:h2:./data/studentdb")
-                    user = "sa"
-                    password = ""
+                    setURL(JDBC_URL)
+                    user = USER
+                    password = PASSWORD
                 }
             }
         }

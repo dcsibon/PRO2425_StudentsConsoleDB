@@ -4,7 +4,7 @@ import es.prog2425.students.data.db.DataSourceFactory
 import es.prog2425.students.model.Student
 import javax.sql.DataSource
 
-class StudentDAO_H2(
+class StudentDAOH2(
     mode: DataSourceFactory.Mode = DataSourceFactory.Mode.HIKARI
 ) : IStudentDAO {
 
@@ -14,13 +14,25 @@ class StudentDAO_H2(
         val students = mutableListOf<Student>()
         dataSource.connection.use { conn ->
             conn.prepareStatement("SELECT * FROM students").use { stmt ->
-                val rs = stmt.executeQuery()
-                while (rs.next()) {
-                    students.add(Student(rs.getInt("id"), rs.getString("name")))
+                stmt.executeQuery().use { rs ->
+                    while (rs.next()) {
+                        students.add(Student(rs.getInt("id"), rs.getString("name")))
+                    }
                 }
             }
         }
         return students
+    }
+
+    override fun getById(id: Int): Student? {
+        dataSource.connection.use { conn ->
+            conn.prepareStatement("SELECT * FROM students WHERE id = ?").use { stmt ->
+                stmt.setInt(1, id)
+                stmt.executeQuery().use { rs ->
+                    return if (rs.next()) Student(rs.getInt("id"), rs.getString("name")) else null
+                }
+            }
+        }
     }
 
     override fun add(name: String) {

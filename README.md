@@ -2,8 +2,8 @@
 # Conexión a la base de datos en Kotlin
 
 En Kotlin (y Java), existen varias formas de gestionar una conexión a una base de datos utilizando JDBC. Las más comunes son:
-	•	DriverManager: método clásico y directo.
-	•	DataSource: interfaz más moderna y flexible, utilizada con o sin pool de conexiones.
+   - DriverManager: método clásico y directo.
+   - DataSource: interfaz más moderna y flexible, utilizada con o sin pool de conexiones.
 
 Ambas formas permiten conectarse a motores como H2, PostgreSQL, MySQL, etc., pero tienen diferencias en escalabilidad, reutilización y eficiencia.
 

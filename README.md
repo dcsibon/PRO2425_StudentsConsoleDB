@@ -7,7 +7,7 @@ En Kotlin (y Java), existen varias formas de gestionar una conexión a una base 
 
 Ambas formas permiten conectarse a motores como H2, PostgreSQL, MySQL, etc., pero tienen diferencias en escalabilidad, reutilización y eficiencia.
 
-1. Usando DriverManager (forma clásica)
+## 1. Usando DriverManager (forma clásica)
 
 DriverManager es la forma tradicional de obtener una conexión JDBC. Cada vez que se invoca getConnection(...), se crea una nueva conexión. Es simple, pero no reutiliza conexiones.
 
@@ -77,7 +77,7 @@ fun main() {
 
 ---
 
-2. Usando DataSource sin pool de conexiones
+## 2. Usando DataSource sin pool de conexiones
 
 DataSource es una interfaz más moderna introducida en JDBC 2.0. Su implementación más simple es JdbcDataSource (como la de H2). Aunque no incluye un pool, es reutilizable y permite separar configuración de lógica.
 
@@ -154,7 +154,7 @@ fun main() {
 
 ---
 
-3. Usando pool de conexiones con HikariCP
+## 3. Usando pool de conexiones con HikariCP
 
 HikariCP es un pool de conexiones rápido, eficiente y recomendado. Permite tener múltiples conexiones abiertas reutilizables, reduciendo el coste de apertura/cierre.
 
@@ -172,16 +172,25 @@ fun main() {
     config.password = ""
     config.maximumPoolSize = 10
 
-    val dataSource = HikariDataSource(config)
+    val dataSource = try {
+        DataSourceFactory.getDataSource(DataSourceFactory.Mode.HIKARI)
+    } catch (e: IllegalStateException) {
+        println("Problemas al crear el DataSource: ${e.message}")
+        return // Se acaba el programa porque no puedo interactuar con la base de datos
+    }
 
-    dataSource.connection.use { conn ->
-        conn.prepareStatement("SELECT * FROM products").use { stmt ->
-            stmt.executeQuery().use { rs ->
-                while (rs.next()) {
-                    println("ID: ${rs.getInt("id")}, Nombre: ${rs.getString("name")}")
+    try {
+        dataSource.connection.use { conn ->
+            conn.prepareStatement("SELECT * FROM products").use { stmt ->
+                stmt.executeQuery().use { rs ->
+                    while (rs.next()) {
+                        println("ID: ${rs.getInt("id")}, Nombre: ${rs.getString("name")}")
+                    }
                 }
             }
         }
+    } catch (e: SQLException) {
+        println("Error: ${e.message}")
     }
 
     dataSource.close()
@@ -190,7 +199,7 @@ fun main() {
 
 ---
 
-4. Usando un DataSourceFactory versátil (SIMPLE o HIKARI)
+## 4. Usando un DataSourceFactory versátil (SIMPLE o HIKARI)
 
 Ideal para aplicaciones que quieren elegir entre JdbcDataSource o HikariDataSource en función del entorno o configuración.
 
@@ -246,16 +255,26 @@ Uso en Main.kt
 
 ```kotlin
 fun main() {
-    val dataSource = DataSourceFactory.create(DataSourceType.HIKARI)
 
-    dataSource.connection.use { conn ->
-        conn.prepareStatement("SELECT * FROM products").use { stmt ->
-            stmt.executeQuery().use { rs ->
-                while (rs.next()) {
-                    println("ID: ${rs.getInt("id")}, Nombre: ${rs.getString("name")}")
+    val dataSource = try {
+        DataSourceFactory.create(DataSourceType.HIKARI)
+    } catch (e: IllegalStateException) {
+        println("Problemas al crear el DataSource: ${e.message}")
+        return // Se acaba el programa porque no puedo interactuar con la base de datos
+    }
+
+    try {
+        dataSource.connection.use { conn ->
+            conn.prepareStatement("SELECT * FROM products").use { stmt ->
+                stmt.executeQuery().use { rs ->
+                    while (rs.next()) {
+                        println("ID: ${rs.getInt("id")}, Nombre: ${rs.getString("name")}")
+                    }
                 }
             }
         }
+    } catch (e: SQLException) {
+        println("Error: ${e.message}")
     }
 
     if (dataSource is HikariDataSource) {

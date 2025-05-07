@@ -53,6 +53,15 @@ class StudentsManager(
         }
     }
 
+    private fun ejecutarOperacionConId(pedirId: String = "ID del estudiante: ", bloque: (Int) -> Unit) {
+        val id = ui.leer(pedirId).toIntOrNull()
+        if (id != null) {
+            ejecutarOperacion { bloque(id) }
+        } else {
+            ui.mostrarError("Argumentos no válidos: El ID introducido no es un número entero válido.")
+        }
+    }
+
     private fun mostrarEstudiantes() {
         ejecutarOperacion {
             val students = service.listAll()
@@ -73,43 +82,28 @@ class StudentsManager(
     }
 
     private fun editarEstudiante() {
-        val id = ui.leer("ID del estudiante a editar: ").toIntOrNull()
-        if (id != null) {
+        ejecutarOperacionConId("ID del estudiante a editar: ") { id ->
             val newName = ui.leer("Nuevo nombre: ")
-            ejecutarOperacion {
-                service.updateStudent(id, newName)
-                ui.mostrar("Estudiante actualizado.")
-            }
-        } else {
-            ui.mostrarError("Argumentos no válidos: El ID introducido no es un número entero válido.")
+            service.updateStudent(id, newName)
+            ui.mostrar("Estudiante actualizado.")
         }
     }
 
     private fun eliminarEstudiante() {
-        val id = ui.leer("ID del estudiante a eliminar: ").toIntOrNull()
-        if (id != null) {
-            ejecutarOperacion {
-                service.deleteStudent(id)
-                ui.mostrar("Estudiante eliminado.")
-            }
-        } else {
-            ui.mostrarError("Argumentos no válidos: El ID introducido no es un número entero válido.")
+        ejecutarOperacionConId("ID del estudiante a eliminar: ") { id ->
+            service.deleteStudent(id)
+            ui.mostrar("Estudiante eliminado.")
         }
     }
 
     private fun buscarPorId() {
-        val id = ui.leer("Introduce el ID a buscar: ").toIntOrNull()
-        if (id != null) {
-            ejecutarOperacion {
-                val student = service.getStudentById(id)
-                if (student != null) {
-                    ui.mostrar("ID: ${student.id} - Nombre: ${student.name}")
-                } else {
-                    ui.mostrar("No se encontró ningún estudiante con ese ID.")
-                }
+        ejecutarOperacionConId("Introduce el ID a buscar: ") { id ->
+            val student = service.getStudentById(id)
+            if (student != null) {
+                ui.mostrar("ID: ${student.id} - Nombre: ${student.name}")
+            } else {
+                ui.mostrar("No se encontró ningún estudiante con ese ID.")
             }
-        } else {
-            ui.mostrarError("Argumentos no válidos: El ID introducido no es un número entero válido.")
         }
     }
 

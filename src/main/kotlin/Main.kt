@@ -6,7 +6,6 @@ import es.prog2425.students.data.dao.StudentDAOH2
 import es.prog2425.students.data.db.DataSourceFactory
 import es.prog2425.students.service.StudentService
 import es.prog2425.students.ui.Console
-import java.sql.SQLException
 
 fun main() {
     // Creo la instancia que gestiona la entrada/salida con el usuario...

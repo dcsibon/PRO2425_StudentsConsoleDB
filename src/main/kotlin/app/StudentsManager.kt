@@ -2,6 +2,7 @@ package es.prog2425.students.app
 
 import es.prog2425.students.service.IStudentService
 import es.prog2425.students.ui.IConsoleUI
+import java.sql.SQLException
 
 class StudentsManager(
     private val service: IStudentService,
@@ -9,7 +10,7 @@ class StudentsManager(
 ) {
     private var running = true
 
-    fun run() {
+    fun mostrarMenu() {
         while (running) {
             ui.limpiar()
             ui.mostrar(
@@ -41,11 +42,17 @@ class StudentsManager(
     }
 
     private fun mostrarEstudiantes() {
-        val students = service.listAll()
-        if (students.isEmpty()) {
-            ui.mostrar("No hay estudiantes.")
-        } else {
-            students.forEach { ui.mostrar("ID: ${it.id} - Nombre: ${it.name}") }
+        try {
+            val students = service.listAll()
+            if (students.isEmpty()) {
+                ui.mostrar("No hay estudiantes.")
+            } else {
+                students.forEach { ui.mostrar("ID: ${it.id} - Nombre: ${it.name}") }
+            }
+        } catch (e: SQLException) {
+            ui.mostrarError("Problemas con la BDD: ${e.message}")
+        } catch (e: Exception) {
+            ui.mostrarError("Se produjo un error: ${e.message}")
         }
     }
 
@@ -55,7 +62,11 @@ class StudentsManager(
             service.addStudent(name)
             ui.mostrar("Estudiante añadido.")
         } catch (e: IllegalArgumentException) {
-            ui.mostrarError(e.message ?: "Nombre inválido.")
+            ui.mostrarError("Argumentos no válidos: ${e.message}")
+        } catch (e: SQLException) {
+            ui.mostrarError("Problemas con la BDD: ${e.message}")
+        } catch (e: Exception) {
+            ui.mostrarError("Se produjo un error: ${e.message}")
         }
     }
 
@@ -67,10 +78,14 @@ class StudentsManager(
                 service.updateStudent(id, newName)
                 ui.mostrar("Estudiante actualizado.")
             } catch (e: IllegalArgumentException) {
-                ui.mostrarError(e.message ?: "Error al actualizar.")
+                ui.mostrarError("Argumentos no válidos: ${e.message}")
+            } catch (e: SQLException) {
+                ui.mostrarError("Problemas con la BDD: ${e.message}")
+            } catch (e: Exception) {
+                ui.mostrarError("Se produjo un error: ${e.message}")
             }
         } else {
-            ui.mostrarError("ID inválido.")
+            ui.mostrarError("Argumentos no válidos: El ID introducido no es un número entero válido.")
         }
     }
 
@@ -81,10 +96,14 @@ class StudentsManager(
                 service.deleteStudent(id)
                 ui.mostrar("Estudiante eliminado.")
             } catch (e: IllegalArgumentException) {
-                ui.mostrarError(e.message ?: "Error al eliminar.")
+                ui.mostrarError("Argumentos no válidos: ${e.message}")
+            } catch (e: SQLException) {
+                ui.mostrarError("Problemas con la BDD: ${e.message}")
+            } catch (e: Exception) {
+                ui.mostrarError("Se produjo un error: ${e.message}")
             }
         } else {
-            ui.mostrarError("ID inválido.")
+            ui.mostrarError("Argumentos no válidos: El ID introducido no es un número entero válido.")
         }
     }
 
@@ -99,10 +118,14 @@ class StudentsManager(
                     ui.mostrar("No se encontró ningún estudiante con ese ID.")
                 }
             } catch (e: Exception) {
-                ui.mostrarError(e.message ?: "Error al buscar estudiante.")
+                ui.mostrarError("Argumentos no válidos: ${e.message}")
+            } catch (e: SQLException) {
+                ui.mostrarError("Problemas con la BDD: ${e.message}")
+            } catch (e: Exception) {
+                ui.mostrarError("Se produjo un error: ${e.message}")
             }
         } else {
-            ui.mostrarError("ID no válido.")
+            ui.mostrarError("Argumentos no válidos: El ID introducido no es un número entero válido.")
         }
     }
 

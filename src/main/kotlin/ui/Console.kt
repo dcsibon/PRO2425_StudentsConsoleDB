@@ -11,7 +11,7 @@ class Console : IConsoleUI {
     }
 
     override fun mostrarError(mensaje: String, saltoLinea: Boolean) {
-        mostrar(mensaje, saltoLinea)
+        mostrar("# ERROR! => $mensaje", saltoLinea)
     }
 
     override fun saltoLinea() {

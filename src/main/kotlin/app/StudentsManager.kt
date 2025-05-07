@@ -82,7 +82,7 @@ class StudentsManager(
     }
 
     private fun editarEstudiante() {
-        ejecutarOperacionConId { id ->
+        ejecutarOperacionConId("ID del estudiante a editar: ") { id ->
             val newName = ui.leer("Nuevo nombre: ")
             service.updateStudent(id, newName)
             ui.mostrar("Estudiante actualizado.")
@@ -90,14 +90,14 @@ class StudentsManager(
     }
 
     private fun eliminarEstudiante() {
-        ejecutarOperacionConId { id ->
+        ejecutarOperacionConId("ID del estudiante a eliminar: ") { id ->
                 service.deleteStudent(id)
                 ui.mostrar("Estudiante eliminado.")
         }
     }
 
     private fun buscarPorId() {
-        ejecutarOperacionConId { id ->
+        ejecutarOperacionConId("Introduce el ID a buscar: ") { id ->
             val student = service.getStudentById(id)
             if (student != null) {
                 ui.mostrar("ID: ${student.id} - Nombre: ${student.name}")

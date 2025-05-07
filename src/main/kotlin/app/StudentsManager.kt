@@ -41,21 +41,6 @@ class StudentsManager(
         }
     }
 
-    private fun mostrarEstudiantes() {
-        try {
-            val students = service.listAll()
-            if (students.isEmpty()) {
-                ui.mostrar("No hay estudiantes.")
-            } else {
-                students.forEach { ui.mostrar("ID: ${it.id} - Nombre: ${it.name}") }
-            }
-        } catch (e: SQLException) {
-            ui.mostrarError("Problemas con la BDD: ${e.message}")
-        } catch (e: Exception) {
-            ui.mostrarError("Se produjo un error: ${e.message}")
-        }
-    }
-
     private fun ejecutarOperacion(bloque: () -> Unit) {
         try {
             bloque()
@@ -65,6 +50,17 @@ class StudentsManager(
             ui.mostrarError("Problemas con la BDD: ${e.message}")
         } catch (e: Exception) {
             ui.mostrarError("Se produjo un error: ${e.message}")
+        }
+    }
+
+    private fun mostrarEstudiantes() {
+        ejecutarOperacion {
+            val students = service.listAll()
+            if (students.isEmpty()) {
+                ui.mostrar("No hay estudiantes.")
+            } else {
+                students.forEach { ui.mostrar("ID: ${it.id} - Nombre: ${it.name}") }
+            }
         }
     }
 

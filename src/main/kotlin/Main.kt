@@ -1,5 +1,6 @@
 package es.prog2425.students
 
+import com.zaxxer.hikari.HikariDataSource
 import es.prog2425.students.app.StudentsManager
 import es.prog2425.students.data.dao.StudentDAOH2
 import es.prog2425.students.data.db.DataSourceFactory
@@ -28,4 +29,9 @@ fun main() {
     // Creo la instancia que gestiona el flujo del programa...
     val app = StudentsManager(studentsService, consola)
     app.mostrarMenu()
+
+    // Buenas prácticas en general... evita fugas si se reestructura el código por ejemplo.
+    if (dataSource is HikariDataSource) {
+        dataSource.close()
+    }
 }

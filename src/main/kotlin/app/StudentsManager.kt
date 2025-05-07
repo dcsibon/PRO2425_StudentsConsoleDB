@@ -41,28 +41,11 @@ class StudentsManager(
         } while (!terminarPrograma)
     }
 
-    private fun mostrarEstudiantes() {
+    private fun ejecutarOperacion(bloque: () -> Unit) {
         try {
-            val students = service.listAll()
-            if (students.isEmpty()) {
-                ui.mostrar("No hay estudiantes.")
-            } else {
-                students.forEach { ui.mostrar("ID: ${it.id} - Nombre: ${it.name}") }
-            }
-        } catch (e: IllegalStateException) {
-            ui.mostrarError("Error de acceso a la base de datos: ${e.message}\n${e.cause}")
-        } catch (e: Exception) {
-            ui.mostrarError("Error inesperado: ${e.message}\n${e.cause}")
-        }
-    }
-
-    private fun agregarEstudiante() {
-        val name = ui.leer("Nombre del nuevo estudiante: ")
-        try {
-            service.addStudent(name)
-            ui.mostrar("Estudiante añadido.")
+            bloque()
         } catch (e: IllegalArgumentException) {
-            ui.mostrarError("Nombre inválido: ${e.message}\n${e.cause}")
+            ui.mostrarError("Argumentos no válidos: ${e.message}\n${e.cause}")
         } catch (e: IllegalStateException) {
             ui.mostrarError("Error de base de datos: ${e.message}\n${e.cause}")
         } catch (e: Exception) {
@@ -70,62 +53,63 @@ class StudentsManager(
         }
     }
 
+    private fun mostrarEstudiantes() {
+        ejecutarOperacion {
+            val students = service.listAll()
+            if (students.isEmpty()) {
+                ui.mostrar("No hay estudiantes.")
+            } else {
+                students.forEach { ui.mostrar("ID: ${it.id} - Nombre: ${it.name}") }
+            }
+        }
+    }
+
+    private fun agregarEstudiante() {
+        val name = ui.leer("Nombre del nuevo estudiante: ")
+        ejecutarOperacion {
+            service.addStudent(name)
+            ui.mostrar("Estudiante añadido.")
+        }
+    }
+
     private fun editarEstudiante() {
         val id = ui.leer("ID del estudiante a editar: ").toIntOrNull()
         if (id != null) {
             val newName = ui.leer("Nuevo nombre: ")
-            try {
+            ejecutarOperacion {
                 service.updateStudent(id, newName)
                 ui.mostrar("Estudiante actualizado.")
-            } catch (e: IllegalArgumentException) {
-                ui.mostrarError("Datos inválidos: ${e.message}\n${e.cause}")
-            } catch (e: IllegalStateException) {
-                ui.mostrarError("Error de base de datos: ${e.message}\n${e.cause}")
-            } catch (e: Exception) {
-                ui.mostrarError("Error inesperado: ${e.message}\n${e.cause}")
             }
         } else {
-            ui.mostrarError("ID inválido.")
+            ui.mostrarError("Argumentos no válidos: El ID introducido no es un número entero válido.")
         }
     }
 
     private fun eliminarEstudiante() {
         val id = ui.leer("ID del estudiante a eliminar: ").toIntOrNull()
         if (id != null) {
-            try {
+            ejecutarOperacion {
                 service.deleteStudent(id)
                 ui.mostrar("Estudiante eliminado.")
-            } catch (e: IllegalArgumentException) {
-                ui.mostrarError("ID inválido: ${e.message}\n${e.cause}")
-            } catch (e: IllegalStateException) {
-                ui.mostrarError("Error de base de datos: ${e.message}\n${e.cause}")
-            } catch (e: Exception) {
-                ui.mostrarError("Error inesperado: ${e.message}\n${e.cause}")
             }
         } else {
-            ui.mostrarError("ID inválido.")
+            ui.mostrarError("Argumentos no válidos: El ID introducido no es un número entero válido.")
         }
     }
 
     private fun buscarPorId() {
         val id = ui.leer("Introduce el ID a buscar: ").toIntOrNull()
         if (id != null) {
-            try {
+            ejecutarOperacion {
                 val student = service.getStudentById(id)
                 if (student != null) {
                     ui.mostrar("ID: ${student.id} - Nombre: ${student.name}")
                 } else {
                     ui.mostrar("No se encontró ningún estudiante con ese ID.")
                 }
-            } catch (e: IllegalArgumentException) {
-                ui.mostrarError("ID inválido: ${e.message}\n${e.cause}")
-            } catch (e: IllegalStateException) {
-                ui.mostrarError("Error de base de datos: ${e.message}\n${e.cause}")
-            } catch (e: Exception) {
-                ui.mostrarError("Error inesperado: ${e.message}\n${e.cause}")
             }
         } else {
-            ui.mostrarError("ID no válido.")
+            ui.mostrarError("Argumentos no válidos: El ID introducido no es un número entero válido.")
         }
     }
 

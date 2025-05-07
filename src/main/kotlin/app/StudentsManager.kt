@@ -56,11 +56,9 @@ class StudentsManager(
         }
     }
 
-    private fun agregarEstudiante() {
-        val name = ui.leer("Nombre del nuevo estudiante: ")
+    private fun ejecutarOperacion(bloque: () -> Unit) {
         try {
-            service.addStudent(name)
-            ui.mostrar("Estudiante añadido.")
+            bloque()
         } catch (e: IllegalArgumentException) {
             ui.mostrarError("Argumentos no válidos: ${e.message}")
         } catch (e: SQLException) {
@@ -70,19 +68,21 @@ class StudentsManager(
         }
     }
 
+    private fun agregarEstudiante() {
+        val name = ui.leer("Nombre del nuevo estudiante: ")
+        ejecutarOperacion {
+            service.addStudent(name)
+            ui.mostrar("Estudiante añadido.")
+        }
+    }
+
     private fun editarEstudiante() {
         val id = ui.leer("ID del estudiante a editar: ").toIntOrNull()
         if (id != null) {
             val newName = ui.leer("Nuevo nombre: ")
-            try {
+            ejecutarOperacion {
                 service.updateStudent(id, newName)
                 ui.mostrar("Estudiante actualizado.")
-            } catch (e: IllegalArgumentException) {
-                ui.mostrarError("Argumentos no válidos: ${e.message}")
-            } catch (e: SQLException) {
-                ui.mostrarError("Problemas con la BDD: ${e.message}")
-            } catch (e: Exception) {
-                ui.mostrarError("Se produjo un error: ${e.message}")
             }
         } else {
             ui.mostrarError("Argumentos no válidos: El ID introducido no es un número entero válido.")
@@ -92,15 +92,9 @@ class StudentsManager(
     private fun eliminarEstudiante() {
         val id = ui.leer("ID del estudiante a eliminar: ").toIntOrNull()
         if (id != null) {
-            try {
+            ejecutarOperacion {
                 service.deleteStudent(id)
                 ui.mostrar("Estudiante eliminado.")
-            } catch (e: IllegalArgumentException) {
-                ui.mostrarError("Argumentos no válidos: ${e.message}")
-            } catch (e: SQLException) {
-                ui.mostrarError("Problemas con la BDD: ${e.message}")
-            } catch (e: Exception) {
-                ui.mostrarError("Se produjo un error: ${e.message}")
             }
         } else {
             ui.mostrarError("Argumentos no válidos: El ID introducido no es un número entero válido.")
@@ -110,19 +104,13 @@ class StudentsManager(
     private fun buscarPorId() {
         val id = ui.leer("Introduce el ID a buscar: ").toIntOrNull()
         if (id != null) {
-            try {
+            ejecutarOperacion {
                 val student = service.getStudentById(id)
                 if (student != null) {
                     ui.mostrar("ID: ${student.id} - Nombre: ${student.name}")
                 } else {
                     ui.mostrar("No se encontró ningún estudiante con ese ID.")
                 }
-            } catch (e: Exception) {
-                ui.mostrarError("Argumentos no válidos: ${e.message}")
-            } catch (e: SQLException) {
-                ui.mostrarError("Problemas con la BDD: ${e.message}")
-            } catch (e: Exception) {
-                ui.mostrarError("Se produjo un error: ${e.message}")
             }
         } else {
             ui.mostrarError("Argumentos no válidos: El ID introducido no es un número entero válido.")

@@ -14,7 +14,7 @@ fun main() {
     // Obtengo la fuente de información que necesito...
     val dataSource = try {
         DataSourceFactory.getDataSource(DataSourceFactory.Mode.HIKARI)
-    } catch (e: SQLException) {
+    } catch (e: IllegalStateException) {
         consola.mostrarError("Problemas al crear el DataSource: ${e.message}")
         return // Se acaba el programa porque no puedo interactuar con la base de datos
     }

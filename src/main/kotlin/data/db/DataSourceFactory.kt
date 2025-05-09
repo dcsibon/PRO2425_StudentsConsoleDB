@@ -11,10 +11,6 @@ object DataSourceFactory {
     private const val USER = "sa"
     private const val PASSWORD = ""
 
-    enum class Mode {
-        HIKARI, SIMPLE
-    }
-
     fun getDataSource(mode: Mode = Mode.HIKARI): DataSource {
         return when (mode) {
             Mode.HIKARI -> {

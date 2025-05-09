@@ -1,16 +1,23 @@
 package es.prog2425.students.app
 
+import es.prog2425.students.model.Address
+import es.prog2425.students.service.IAddressService
+import es.prog2425.students.service.IStudentManagerService
 import es.prog2425.students.service.IStudentService
 import es.prog2425.students.ui.IConsoleUI
 import java.sql.SQLException
+import javax.sql.DataSource
 
 class StudentsManager(
-    private val service: IStudentService,
-    private val ui: IConsoleUI
+    private val studentService: IStudentService,
+    private val addressService: IAddressService,
+    private val studentManagerService: IStudentManagerService,
+    private val ui: IConsoleUI,
+    private val dataSource: DataSource
 ) {
     private var running = true
 
-    fun mostrarMenu() {
+    fun menu() {
         while (running) {
             ui.limpiar()
             ui.mostrar(
@@ -21,7 +28,11 @@ class StudentsManager(
                 3. Editar estudiante
                 4. Eliminar estudiante
                 5. Buscar estudiante por ID
-                6. Salir
+                6. Agregar dirección
+                7. Modificar dirección
+                8. Eliminar dirección
+                9. Mostrar direcciones de un estudiante
+                10. Salir
                 """.trimIndent()
             )
 
@@ -33,7 +44,11 @@ class StudentsManager(
                 "3" -> editarEstudiante()
                 "4" -> eliminarEstudiante()
                 "5" -> buscarPorId()
-                "6" -> salir()
+                "6" -> agregarDireccion()
+                "7" -> modificarDireccion()
+                "8" -> eliminarDireccion()
+                "9" -> mostrarDireccionesDeEstudiante()
+                "10" -> salir()
                 else -> ui.mostrarError("Opción no válida.")
             }
 
@@ -64,7 +79,7 @@ class StudentsManager(
 
     private fun mostrarEstudiantes() {
         ejecutarOperacion {
-            val students = service.listAll()
+            val students = studentService.listAll()
             if (students.isEmpty()) {
                 ui.mostrar("No hay estudiantes.")
             } else {
@@ -76,7 +91,7 @@ class StudentsManager(
     private fun agregarEstudiante() {
         val name = ui.leer("Nombre del nuevo estudiante: ")
         ejecutarOperacion {
-            service.addStudent(name)
+            studentService.addStudent(name)
             ui.mostrar("Estudiante añadido.")
         }
     }
@@ -84,25 +99,108 @@ class StudentsManager(
     private fun editarEstudiante() {
         ejecutarOperacionConId("ID del estudiante a editar: ") { id ->
             val newName = ui.leer("Nuevo nombre: ")
-            service.updateStudent(id, newName)
+            studentService.updateStudent(id, newName)
             ui.mostrar("Estudiante actualizado.")
         }
     }
 
+    /*
     private fun eliminarEstudiante() {
         ejecutarOperacionConId("ID del estudiante a eliminar: ") { id ->
             service.deleteStudent(id)
             ui.mostrar("Estudiante eliminado.")
         }
     }
+    */
+
+    private fun eliminarEstudiante() {
+        val id = ui.leer("ID del estudiante a eliminar: ").toIntOrNull()
+        if (id != null) {
+            val conn = dataSource.connection
+            try {
+                conn.autoCommit = false
+                studentManagerService.deleteStudentWithAddresses(id, conn)
+                conn.commit()
+                ui.mostrar("Estudiante y sus direcciones eliminados correctamente.")
+            } catch (e: IllegalArgumentException) {
+                ui.mostrarError("Argumentos no válidos: ${e.message}")
+                conn.rollback()
+            } catch (e: SQLException) {
+                ui.mostrarError("Problemas con la BDD: ${e.message}")
+                conn.rollback()
+            } catch (e: Exception) {
+                ui.mostrarError("Se produjo un error: ${e.message}")
+                conn.rollback()
+            } finally {
+                conn.close()
+            }
+        } else {
+            ui.mostrarError("Argumentos no válidos: El ID introducido no es un número entero válido.")
+        }
+    }
 
     private fun buscarPorId() {
         ejecutarOperacionConId("Introduce el ID a buscar: ") { id ->
-            val student = service.getStudentById(id)
+            val student = studentService.getStudentById(id)
             if (student != null) {
                 ui.mostrar("ID: ${student.id} - Nombre: ${student.name}")
             } else {
                 ui.mostrar("No se encontró ningún estudiante con ese ID.")
+            }
+        }
+    }
+
+    private fun agregarDireccion() {
+        val street = ui.leer("Calle: ")
+        val city = ui.leer("Ciudad: ")
+        val studentId = ui.leer("ID del estudiante: ").toIntOrNull()
+
+        if (studentId != null) {
+            ejecutarOperacion {
+                addressService.add(Address(street = street, city = city, studentId = studentId))
+                ui.mostrar("Dirección añadida.")
+            }
+        } else {
+            ui.mostrarError("El ID del estudiante no es válido.")
+        }
+    }
+
+    private fun modificarDireccion() {
+        val id = ui.leer("ID de la dirección a modificar: ").toIntOrNull()
+        if (id != null) {
+            val street = ui.leer("Nueva calle: ")
+            val city = ui.leer("Nueva ciudad: ")
+            val studentId = ui.leer("Nuevo ID de estudiante: ").toIntOrNull()
+
+            if (studentId != null) {
+                ejecutarOperacion {
+                    addressService.update(Address(id = id, street = street, city = city, studentId = studentId))
+                    ui.mostrar("Dirección actualizada.")
+                }
+            } else {
+                ui.mostrarError("El ID del estudiante no es válido.")
+            }
+        } else {
+            ui.mostrarError("El ID de la dirección no es válido.")
+        }
+    }
+
+    private fun eliminarDireccion() {
+        ejecutarOperacionConId("ID de la dirección a eliminar:") { id ->
+            addressService.delete(id)
+            ui.mostrar("Dirección eliminada.")
+        }
+    }
+
+    private fun mostrarDireccionesDeEstudiante() {
+        ejecutarOperacionConId { id ->
+            val direcciones = addressService.getByStudentId(id)
+            if (direcciones.isEmpty()) {
+                ui.mostrar("Este estudiante no tiene direcciones registradas.")
+            } else {
+                direcciones.forEach { dir ->
+                    ui.mostrar("ID: ${dir.id} - ${dir.street}, ${dir.city}")
+                }
             }
         }
     }

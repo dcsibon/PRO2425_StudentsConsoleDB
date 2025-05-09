@@ -1,6 +1,7 @@
 package es.prog2425.students.data.dao
 
 import es.prog2425.students.model.Student
+import java.sql.Connection
 import javax.sql.DataSource
 
 class StudentDAOH2(private val ds: DataSource) : IStudentDAO {
@@ -51,10 +52,15 @@ class StudentDAOH2(private val ds: DataSource) : IStudentDAO {
 
     override fun delete(id: Int) {
         ds.connection.use { conn ->
-            conn.prepareStatement("DELETE FROM students WHERE id = ?").use { stmt ->
-                stmt.setInt(1, id)
-                stmt.executeUpdate()
-            }
+            delete(id, conn)
         }
     }
+
+    override fun delete(id: Int, conn: Connection) {
+        conn.prepareStatement("DELETE FROM students WHERE id = ?").use { stmt ->
+            stmt.setInt(1, id)
+            stmt.executeUpdate()
+        }
+    }
+
 }

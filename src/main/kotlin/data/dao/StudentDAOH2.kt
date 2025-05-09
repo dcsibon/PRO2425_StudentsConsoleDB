@@ -8,8 +8,8 @@ class StudentDAOH2(private val ds: DataSource) : IStudentDAO {
     override fun getAll(): List<Student> {
         val students = mutableListOf<Student>()
         ds.connection.use { conn ->
-            conn.prepareStatement("SELECT * FROM students").use { stmt ->
-                stmt.executeQuery().use { rs ->
+            conn.createStatement().use { stmt ->
+                stmt.executeQuery("SELECT * FROM students").use { rs ->
                     while (rs.next()) {
                         students.add(Student(rs.getInt("id"), rs.getString("name")))
                     }

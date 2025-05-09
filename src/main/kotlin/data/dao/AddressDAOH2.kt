@@ -72,7 +72,7 @@ class AddressDAOH2(private val ds: DataSource) : IAddressDAO {
                 stmt.setString(1, address.street)
                 stmt.setString(2, address.city)
                 stmt.setInt(3, address.studentId)
-                stmt.setInt(4, address.id!!)
+                stmt.setInt(4, address.id)
                 stmt.executeUpdate()
             }
         }

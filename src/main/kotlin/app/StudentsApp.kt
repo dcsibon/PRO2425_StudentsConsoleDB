@@ -2,16 +2,16 @@ package es.prog2425.students.app
 
 import es.prog2425.students.model.Address
 import es.prog2425.students.service.IAddressService
-import es.prog2425.students.service.IStudentManagerService
+import es.prog2425.students.service.IStudentTransactionService
 import es.prog2425.students.service.IStudentService
 import es.prog2425.students.ui.IConsoleUI
 import java.sql.SQLException
 import javax.sql.DataSource
 
-class StudentsManager(
+class StudentsApp(
     private val studentService: IStudentService,
     private val addressService: IAddressService,
-    private val studentManagerService: IStudentManagerService,
+    private val studentManagerService: IStudentTransactionService,
     private val ui: IConsoleUI,
     private val dataSource: DataSource
 ) {

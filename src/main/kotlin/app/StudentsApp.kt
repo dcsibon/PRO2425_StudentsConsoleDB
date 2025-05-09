@@ -11,7 +11,7 @@ import javax.sql.DataSource
 class StudentsApp(
     private val studentService: IStudentService,
     private val addressService: IAddressService,
-    private val studentManagerService: IStudentTransactionService,
+    private val studentTransactionService: IStudentTransactionService,
     private val ui: IConsoleUI,
     private val dataSource: DataSource
 ) {
@@ -119,7 +119,7 @@ class StudentsApp(
             val conn = dataSource.connection
             try {
                 conn.autoCommit = false
-                studentManagerService.deleteStudentWithAddresses(id, conn)
+                studentTransactionService.deleteStudentWithAddresses(id, conn)
                 conn.commit()
                 ui.mostrar("Estudiante y sus direcciones eliminados correctamente.")
             } catch (e: IllegalArgumentException) {

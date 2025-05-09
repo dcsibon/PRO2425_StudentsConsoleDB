@@ -32,10 +32,10 @@ fun main() {
     val addreessService = AddressService(addressDAO)
 
     // Creo la instancia del servicio orquestador (gestor transaccional)
-    val studentsManag = StudentTransactionService(studentsDAO, addressDAO)
+    val studentsTrans = StudentTransactionService(studentsDAO, addressDAO)
 
     // Creo la instancia que gestiona el flujo principal del programa (menú, lógica de control)
-    val app = StudentsApp(studentsService, addreessService, studentsManag, consola, dataSource)
+    val app = StudentsApp(studentsService, addreessService, studentsTrans, consola, dataSource)
     app.menu()
 
     // Buenas prácticas en general... cerrar el pool si se usa HikariCP evita fugas si se reestructura el código por ejemplo.

@@ -1,5 +1,6 @@
 package es.prog2425.students.app
 
+import es.prog2425.students.data.dto.AddressDTO
 import es.prog2425.students.model.Address
 import es.prog2425.students.service.IAddressService
 import es.prog2425.students.service.IStudentTransactionService
@@ -12,8 +13,7 @@ class StudentsApp(
     private val studentService: IStudentService,
     private val addressService: IAddressService,
     private val studentTransactionService: IStudentTransactionService,
-    private val ui: IConsoleUI,
-    private val dataSource: DataSource
+    private val ui: IConsoleUI
 ) {
     private var running = true
 
@@ -104,38 +104,10 @@ class StudentsApp(
         }
     }
 
-    /*
     private fun eliminarEstudiante() {
         ejecutarOperacionConId("ID del estudiante a eliminar: ") { id ->
-            service.deleteStudent(id)
-            ui.mostrar("Estudiante eliminado.")
-        }
-    }
-    */
-
-    private fun eliminarEstudiante() {
-        val id = ui.leer("ID del estudiante a eliminar: ").toIntOrNull()
-        if (id != null) {
-            val conn = dataSource.connection
-            try {
-                conn.autoCommit = false
-                studentTransactionService.deleteStudentWithAddresses(id, conn)
-                conn.commit()
-                ui.mostrar("Estudiante y sus direcciones eliminados correctamente.")
-            } catch (e: IllegalArgumentException) {
-                ui.mostrarError("Argumentos no válidos: ${e.message}")
-                conn.rollback()
-            } catch (e: SQLException) {
-                ui.mostrarError("Problemas con la BDD: ${e.message}")
-                conn.rollback()
-            } catch (e: Exception) {
-                ui.mostrarError("Se produjo un error: ${e.message}")
-                conn.rollback()
-            } finally {
-                conn.close()
-            }
-        } else {
-            ui.mostrarError("Argumentos no válidos: El ID introducido no es un número entero válido.")
+            studentTransactionService.deleteStudentWithAddresses(id)
+            ui.mostrar("Estudiante y sus direcciones eliminados correctamente.")
         }
     }
 
@@ -157,7 +129,7 @@ class StudentsApp(
 
         if (studentId != null) {
             ejecutarOperacion {
-                addressService.add(Address(street = street, city = city, studentId = studentId))
+                addressService.add(AddressDTO(id = 0, street = street, city = city, studentId = studentId))
                 ui.mostrar("Dirección añadida.")
             }
         } else {
@@ -174,7 +146,7 @@ class StudentsApp(
 
             if (studentId != null) {
                 ejecutarOperacion {
-                    addressService.update(Address(id = id, street = street, city = city, studentId = studentId))
+                    addressService.update(AddressDTO(id = id, street = street, city = city, studentId = studentId))
                     ui.mostrar("Dirección actualizada.")
                 }
             } else {

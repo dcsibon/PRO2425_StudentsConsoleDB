@@ -1,7 +1,6 @@
 package es.prog2425.students.data.dao
 
 import es.prog2425.students.model.Student
-import java.sql.Connection
 
 interface IStudentDAO {
     fun getAll(): List<Student>

@@ -28,17 +28,17 @@ object SchemaInitializer {
                     it[name] = "Luis"
                 }.value
 
-                val sofiaId = Students.insertAndGetId {
+                Students.insert {
                     it[name] = "Sofía"
-                }.value
+                }
 
-                val carlosId = Students.insertAndGetId {
+                Students.insert {
                     it[name] = "Carlos"
-                }.value
+                }
 
-                val mariaId = Students.insertAndGetId {
+                Students.insert {
                     it[name] = "María"
-                }.value
+                }
 
                 Addresses.insert {
                     it[street] = "Ronda de Estero 5, 1A"

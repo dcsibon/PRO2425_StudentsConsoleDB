@@ -1,5 +1,6 @@
 package es.prog2425.students.app
 
+import es.prog2425.students.data.db.DatabaseInitializer
 import es.prog2425.students.model.Address
 import es.prog2425.students.service.IAddressService
 import es.prog2425.students.service.IStudentTransactionService
@@ -23,6 +24,7 @@ class StudentsApp(
             ui.mostrar(
                 """
                 === MENÚ ===
+                0. Crear e inicializar la base de datos
                 1. Mostrar estudiantes
                 2. Agregar estudiante
                 3. Editar estudiante
@@ -39,6 +41,7 @@ class StudentsApp(
             ui.saltoLinea()
 
             when (ui.leer("Elige una opción: ")) {
+                "0" -> crearBaseDatos()
                 "1" -> mostrarEstudiantes()
                 "2" -> agregarEstudiante()
                 "3" -> editarEstudiante()
@@ -74,6 +77,21 @@ class StudentsApp(
             ejecutarOperacion { bloque(id) }
         } else {
             ui.mostrarError("Argumentos no válidos: El ID introducido no es un número entero válido.")
+        }
+    }
+
+    private fun crearBaseDatos() {
+        try {
+            dataSource.connection.use { conn ->
+                DatabaseInitializer.crearTablasYDatos(conn)
+                ui.mostrar("Base de datos creada e inicializada correctamente.")
+            }
+        } catch (e: SQLException) {
+            ui.mostrarError("Error SQL durante la inicialización: ${e.message}")
+        } catch (e: RuntimeException) {
+            ui.mostrarError("Error de ejecución al crear la base de datos: ${e.message}")
+        } catch (e: Exception) {
+            ui.mostrarError("Se produjo un error inesperado durante la inicialización : ${e.message}")
         }
     }
 

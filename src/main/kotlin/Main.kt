@@ -40,6 +40,10 @@ fun main() {
 
     // Buenas prácticas en general... cerrar el pool si se usa HikariCP evita fugas si se reestructura el código por ejemplo.
     if (dataSource is HikariDataSource) {
-        dataSource.close()
+        try {
+            dataSource.close()
+        } catch (e: Exception) {
+            consola.mostrarError("Problemas al cerrar el DataSource: ${e.message}")
+        }
     }
 }

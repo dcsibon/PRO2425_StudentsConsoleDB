@@ -6,6 +6,7 @@ import es.prog2425.students.service.IAddressService
 import es.prog2425.students.service.IStudentTransactionService
 import es.prog2425.students.service.IStudentService
 import es.prog2425.students.ui.IConsoleUI
+import java.sql.Connection
 import java.sql.SQLException
 import javax.sql.DataSource
 
@@ -40,41 +41,37 @@ class StudentsApp(
 
             ui.saltoLinea()
 
-            when (ui.leer("Elige una opción: ")) {
-                "0" -> crearBaseDatos()
-                "1" -> mostrarEstudiantes()
-                "2" -> agregarEstudiante()
-                "3" -> editarEstudiante()
-                "4" -> eliminarEstudiante()
-                "5" -> buscarPorId()
-                "6" -> agregarDireccion()
-                "7" -> modificarDireccion()
-                "8" -> eliminarDireccion()
-                "9" -> mostrarDireccionesDeEstudiante()
-                "10" -> salir()
-                else -> ui.mostrarError("Opción no válida.")
+            try {
+                when (ui.leer("Elige una opción: ")) {
+                    "0" -> crearBaseDatos()
+                    "1" -> mostrarEstudiantes()
+                    "2" -> agregarEstudiante()
+                    "3" -> editarEstudiante()
+                    "4" -> eliminarEstudiante()
+                    "5" -> buscarPorId()
+                    "6" -> agregarDireccion()
+                    "7" -> modificarDireccion()
+                    "8" -> eliminarDireccion()
+                    "9" -> mostrarDireccionesDeEstudiante()
+                    "10" -> salir()
+                    else -> ui.mostrarError("Opción no válida.")
+                }
+            } catch (e: IllegalArgumentException) {
+                ui.mostrarError("Argumentos no válidos: ${e.message}")
+            } catch (e: SQLException) {
+                ui.mostrarError("Problemas con la BDD: ${e.message}")
+            } catch (e: Exception) {
+                ui.mostrarError("Se produjo un error: ${e.message}")
             }
 
             ui.pausar()
         }
     }
 
-    private fun ejecutarOperacion(bloque: () -> Unit) {
-        try {
-            bloque()
-        } catch (e: IllegalArgumentException) {
-            ui.mostrarError("Argumentos no válidos: ${e.message}")
-        } catch (e: SQLException) {
-            ui.mostrarError("Problemas con la BDD: ${e.message}")
-        } catch (e: Exception) {
-            ui.mostrarError("Se produjo un error: ${e.message}")
-        }
-    }
-
     private fun ejecutarOperacionConId(pedirId: String = "ID del estudiante: ", bloque: (Int) -> Unit) {
         val id = ui.leer(pedirId).toIntOrNull()
         if (id != null) {
-            ejecutarOperacion { bloque(id) }
+            bloque(id)
         } else {
             ui.mostrarError("Argumentos no válidos: El ID introducido no es un número entero válido.")
         }
@@ -96,22 +93,18 @@ class StudentsApp(
     }
 
     private fun mostrarEstudiantes() {
-        ejecutarOperacion {
-            val students = studentService.listAll()
-            if (students.isEmpty()) {
-                ui.mostrar("No hay estudiantes.")
-            } else {
-                students.forEach { ui.mostrar("ID: ${it.id} - Nombre: ${it.name}") }
-            }
+        val students = studentService.listAll()
+        if (students.isEmpty()) {
+            ui.mostrar("No hay estudiantes.")
+        } else {
+            students.forEach { ui.mostrar("ID: ${it.id} - Nombre: ${it.name}") }
         }
     }
 
     private fun agregarEstudiante() {
         val name = ui.leer("Nombre del nuevo estudiante: ")
-        ejecutarOperacion {
-            studentService.addStudent(name)
-            ui.mostrar("Estudiante añadido.")
-        }
+        studentService.addStudent(name)
+        ui.mostrar("Estudiante añadido.")
     }
 
     private fun editarEstudiante() {
@@ -122,35 +115,25 @@ class StudentsApp(
         }
     }
 
-    /*
-    private fun eliminarEstudiante() {
-        ejecutarOperacionConId("ID del estudiante a eliminar: ") { id ->
-            service.deleteStudent(id)
-            ui.mostrar("Estudiante eliminado.")
-        }
-    }
-    */
-
     private fun eliminarEstudiante() {
         val id = ui.leer("ID del estudiante a eliminar: ").toIntOrNull()
         if (id != null) {
-            val conn = dataSource.connection
+            var conn : Connection? = null
             try {
+                conn = dataSource.connection
                 conn.autoCommit = false
                 studentTransactionService.deleteStudentWithAddresses(id, conn)
                 conn.commit()
                 ui.mostrar("Estudiante y sus direcciones eliminados correctamente.")
-            } catch (e: IllegalArgumentException) {
-                ui.mostrarError("Argumentos no válidos: ${e.message}")
-                conn.rollback()
-            } catch (e: SQLException) {
-                ui.mostrarError("Problemas con la BDD: ${e.message}")
-                conn.rollback()
             } catch (e: Exception) {
-                ui.mostrarError("Se produjo un error: ${e.message}")
-                conn.rollback()
+                try {
+                    conn?.rollback()
+                } catch (rollbackEx: Exception) {
+                    ui.mostrarError("Error durante rollback: ${rollbackEx.message}")
+                }
+                throw e // relanzar la misma excepción sin modificarla
             } finally {
-                conn.close()
+                conn?.close()
             }
         } else {
             ui.mostrarError("Argumentos no válidos: El ID introducido no es un número entero válido.")
@@ -174,10 +157,8 @@ class StudentsApp(
         val studentId = ui.leer("ID del estudiante: ").toIntOrNull()
 
         if (studentId != null) {
-            ejecutarOperacion {
-                addressService.add(Address(street = street, city = city, studentId = studentId))
-                ui.mostrar("Dirección añadida.")
-            }
+            addressService.add(Address(street = street, city = city, studentId = studentId))
+            ui.mostrar("Dirección añadida.")
         } else {
             ui.mostrarError("El ID del estudiante no es válido.")
         }
@@ -191,10 +172,8 @@ class StudentsApp(
             val studentId = ui.leer("Nuevo ID de estudiante: ").toIntOrNull()
 
             if (studentId != null) {
-                ejecutarOperacion {
-                    addressService.update(Address(id = id, street = street, city = city, studentId = studentId))
-                    ui.mostrar("Dirección actualizada.")
-                }
+                addressService.update(Address(id = id, street = street, city = city, studentId = studentId))
+                ui.mostrar("Dirección actualizada.")
             } else {
                 ui.mostrarError("El ID del estudiante no es válido.")
             }
